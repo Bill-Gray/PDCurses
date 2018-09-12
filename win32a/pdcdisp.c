@@ -189,11 +189,48 @@ void PDC_gotoyx(int row, int col)
     }
 }
 
-int PDC_font_size = 12;
+#ifndef USER_DEFAULT_SCREEN_DPI /* defined in newer versions of WinUser.h */
+#define USER_DEFAULT_SCREEN_DPI 96
+#endif
+
+/* if the calling application marks itself as "DPI aware", we want to make sure
+that we scale the user's font appropriately. the GetDpiForSystem call is only
+available on Windows 10 and newer, so we load the DLL dynamically and find the
+function address at runtime. if the method isn't available, that means we're on
+and older operating system, so we just return the original value */
+static LONG scale_font_for_current_dpi( LONG size)
+{
+    typedef LONG(__stdcall *GetDpiForSystemProc)();
+    HMODULE user32Dll = LoadLibrary( _T("User32.dll"));
+
+    if ( user32Dll)
+    {
+        /* https://msdn.microsoft.com/en-us/library/windows/desktop/mt748623(v=vs.85).aspx */
+
+        GetDpiForSystemProc getDpiForSystem =
+            (GetDpiForSystemProc) GetProcAddress( user32Dll, "GetDpiForSystem");
+
+        if ( getDpiForSystem)
+        {
+            size = MulDiv( size, getDpiForSystem(), USER_DEFAULT_SCREEN_DPI);
+        }
+
+        FreeLibrary( user32Dll);
+    }
+
+    return size;
+}
+
+int PDC_font_size = -1;
 TCHAR PDC_font_name[80];
 
 static LOGFONT PDC_get_logical_font( const int font_idx)
 {
+    if ( PDC_font_size < 0)
+    {
+        PDC_font_size = scale_font_for_current_dpi(12); /* default 12 points */
+    }
+
     LOGFONT lf;
 
     memset(&lf, 0, sizeof(LOGFONT));        /* Clear out structure. */

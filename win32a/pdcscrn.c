@@ -2527,6 +2527,14 @@ int PDC_scr_open( int argc, char **argv)
     int i, r, g, b;
     HMODULE hntdll = GetModuleHandle( _T("ntdll.dll"));
 
+    HMODULE shcoredll = GetModuleHandle(_T("Shcore.dll"));
+    if (shcoredll) {
+        typedef HRESULT *(CDECL *set_process_dpi_awareness_t)(int);
+        static set_process_dpi_awareness_t set_process_dpi_awareness_func;
+        set_process_dpi_awareness_func = (set_process_dpi_awareness_t)GetProcAddress(shcoredll, "SetProcessDpiAwareness");
+        set_process_dpi_awareness_func(1 /*PROCESS_SYSTEM_DPI_AWARE*/);
+    }
+
     if( hntdll)
         wine_version = (wine_version_func)GetProcAddress(hntdll, "wine_get_version");
 
