@@ -135,7 +135,7 @@ IF (PDC_SDL2_DEPS_BUILD)
             URL https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-${SDL2_TTF_RELEASE}.zip
             URL_HASH "SHA256=cdb72b5b1c3b27795fa128af36f369fee5d3e38a96c350855da0b81880555dbc"
             PATCH_COMMAND cmake -E copy 
-                ${CMAKE_SOURCE_DIR}/cmake/sdl2_ttf/CMakeLists.txt 
+                ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2_ttf/CMakeLists.txt 
                 ${CMAKE_BINARY_DIR}/sdl2_ttf/CMakeLists.txt
             UPDATE_COMMAND ""
             DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
